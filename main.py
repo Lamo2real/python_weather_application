@@ -10,9 +10,9 @@ class WeatherApp(QWidget):
         self.city_label = QLabel("Enter City name: ", self)
         self.city_input = QLineEdit(self)
         self.get_weather_button = QPushButton("get weather", self)
-        self.temperature_label = QLabel("70°F", self)
-        self.emoji_label = QLabel("🌞", self)
-        self.description_label = QLabel("Sunny", self)
+        self.temperature_label = QLabel(self)
+        self.emoji_label = QLabel(self)
+        self.description_label = QLabel(self)
         self.initUI()
     
     def initUI(self):
@@ -69,7 +69,64 @@ class WeatherApp(QWidget):
                 font-size: 50px;
             }
         """)
+        
+        self.get_weather_button.clicked.connect(self.get_weather)
 
+    def get_weather(self):
+        api_key = '590e5dd1cc0f1482366ead84de2e6d22'
+        city = self.city_input.text()
+        url = f'https://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}'
+        
+        
+        
+        try: 
+            response = requests.get(url)
+            response.raise_for_status() #this method will raise an exception if there are any http errors
+            data = response.json()
+            
+            if data['cod'] == 200:
+                self.display_weather(data)
+            
+        except requests.exceptions.HTTPError as http_error: #if statue code is between 400 and 500
+            match response.status_code:
+                case 400:
+                    self.display_error('Bad request:\n please check your prompt')
+                case 401:
+                    self.display_error('Unauthorized:\n invalid API Key')
+                case 403:
+                    self.display_error('Forbidden:\n Access is denied')
+                case 404:
+                    self.display_error('Not Found:\n City not found')
+                case 500:
+                    self.display_error('Internal Server Issues:\n please try again later')
+                case 502:
+                    self.display_error('bad gateway:\n Invalid response from the server')
+                case 503:
+                    self.display_error('Service Unavailable:\n Server is down')
+                case 504:
+                    self.display_error('Gateway Timeout:\n no response from the server')
+                case _: #unexpeted error
+                    self.display_error(f'HTTP error occured:\n {http_error} ')
+          
+        except requests.exceptions.ConnectionError: #if any connection errors eccours
+            print('Connection Error:\ncheck your internet connection')
+        except requests.exceptions.Timeout: # such as if any time loading the get request is too long
+            print('Timeout Error:\nThe request timed out')
+        except requests.exceptions.TooManyRedirects: 
+            print('Too many Redirects\nCheck the URL')
+        except requests.exceptions.RequestException as req_error: # if there are any network issues this excxeption will be raised
+            print(f'Request Error\n{req_error} ')
+            
+            
+            
+    def display_error(self, message):
+        self.temperature_label.setStyleSheet("font-size: 30px;")
+        self.temperature_label.setText(message)
+    
+    def display_weather(self, data):
+        print(data)
+        
+    
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     weather_app = WeatherApp()
