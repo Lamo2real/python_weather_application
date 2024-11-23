@@ -1,12 +1,15 @@
 import requests
+import os
+from dotenv import load_dotenv
 
-API_KEY = '590e5dd1cc0f1482366ead84de2e6d22'
+
 BASE_URL = 'https://api.openweathermap.org/data/2.5/weather'
 
 def get_weather_data(city):
     """fetch data from API source and manage data with error handling and control with exceptions"""
-    
-    url = f"{BASE_URL}?q={city}&appid={API_KEY}"
+    load_dotenv()
+    api_key = os.getenv('API_KEY')
+    url = f"{BASE_URL}?q={city}&appid={api_key}"
     try:
         response = requests.get(url)
         response.raise_for_status()
