@@ -7,7 +7,7 @@ BASE_URL = 'https://api.openweathermap.org/data/2.5/weather'
 
 def get_weather_data(city):
     """fetch data from API source and manage data with error handling and control with exceptions"""
-    load_dotenv()
+    load_dotenv(dotenv_path='../.env')
     api_key = os.getenv('API_KEY')
     url = f"{BASE_URL}?q={city}&appid={api_key}"
     try:
